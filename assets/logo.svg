@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="176" height="40" viewBox="0 0 176 40" role="img" aria-label="MedFlowAI">
+  <rect x="0" y="3" width="34" height="34" rx="9" fill="#14B8A6"/>
+  <path d="M5 21 H11 L13.5 13 L17 29 L19.5 18 L22 22 H29"
+        fill="none" stroke="#0B1F3A" stroke-width="2.4"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="44" y="26" font-family="Segoe UI, Helvetica, Arial, sans-serif"
+        font-size="20" font-weight="700" fill="#FFFFFF" letter-spacing="0.2">MedFlow<tspan fill="#2DD4BF">AI</tspan></text>
+</svg>

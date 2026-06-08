@@ -1,0 +1,16 @@
+# MedFlowAI – Streamlit Theme
+# Tiefes Navy als Markenfarbe, Teal als Akzent. Helle, ruhige Arbeitsfläche.
+
+[theme]
+primaryColor = "#14B8A6"          # Akzent (Buttons, Fokus, Slider)
+backgroundColor = "#FFFFFF"        # Arbeitsfläche
+secondaryBackgroundColor = "#F1F5F9"  # Karten / Inputs
+textColor = "#0F172A"              # Slate-900
+font = "sans serif"
+
+[server]
+# Keine Nutzungsstatistiken an Dritte senden.
+gatherUsageStats = false
+
+[browser]
+gatherUsageStats = false

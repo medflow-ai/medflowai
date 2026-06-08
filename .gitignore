@@ -1,0 +1,12 @@
+# Secrets niemals committen
+.streamlit/secrets.toml
+
+# Laufzeit-Artefakte
+audit_log.jsonl
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.DS_Store
