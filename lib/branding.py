@@ -37,8 +37,17 @@ html, body, [class*="css"] {{ -webkit-font-smoothing: antialiased; }}
 }}
 [data-testid="stMain"] p, [data-testid="stMain"] li {{ color: var(--ink); line-height: 1.6; }}
 [data-testid="stMain"] a {{ color: #0FA295; }}
-footer, [data-testid="stToolbar"] {{ visibility: hidden; }}
+footer {{ visibility: hidden; }}
 hr {{ border-color: var(--line); }}
+
+/* Sidebar-Toggle / Bedienelemente immer sichtbar halten */
+[data-testid="stSidebarCollapsedControl"],
+[data-testid="collapsedControl"],
+[data-testid="stExpandSidebarButton"],
+[data-testid="stSidebarCollapseButton"],
+[data-testid="stHeader"] {{
+  visibility: visible !important; opacity: 1 !important;
+}}
 
 /* ---------- Sidebar: tiefes Navy ---------- */
 section[data-testid="stSidebar"] {{
