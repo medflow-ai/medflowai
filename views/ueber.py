@@ -86,19 +86,6 @@ with right:
 st.divider()
 
 # --------------------------------------------------------------------------- #
-# Grenzen
-# --------------------------------------------------------------------------- #
-st.markdown("### Grenzen & verantwortungsvoller Einsatz")
-st.markdown(
-    "- KI-Ausgaben können Fehler enthalten oder Nuancen übersehen – die ärztliche "
-    "Prüfung bleibt unverzichtbar.\n"
-    "- Die Anwendung ersetzt keine klinische Beurteilung und kein PVS.\n"
-    "- Eingaben sollten pseudonymisiert erfolgen (siehe Datenschutz & Sicherheit)."
-)
-
-st.divider()
-
-# --------------------------------------------------------------------------- #
 # Impressum (Platzhalter)
 # --------------------------------------------------------------------------- #
 st.markdown("### Impressum & Kontakt")

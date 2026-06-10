@@ -31,8 +31,12 @@ nav = st.navigation(
             st.Page("views/verlauf.py", title="Verlauf", icon="🗂️"),
         ],
         "Information": [
-            st.Page("views/datenschutz.py", title="Datenschutz & Sicherheit", icon="🔒"),
             st.Page("views/ueber.py", title=f"Über {C.APP_NAME}", icon="ℹ️"),
+            st.Page("views/datenschutz.py", title="Datenschutz & Sicherheit", icon="🔒"),
+            st.Page("views/grenzen.py", title="Grenzen", icon="⚠️"),
+        ],
+        "Einstellungen": [
+            st.Page("views/einstellungen.py", title="Einstellungen", icon="⚙️"),
         ],
     }
 )

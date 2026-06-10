@@ -193,9 +193,66 @@ textarea:focus, .stTextInput input:focus {{
 """
 
 
+# --------------------------------------------------------------------------- #
+# Darstellungsmodi (über die Einstellungen-Seite umschaltbar)
+# --------------------------------------------------------------------------- #
+_DARK_CSS = """
+.stApp, [data-testid="stMain"], [data-testid="stHeader"] { background-color:#0B1220 !important; }
+[data-testid="stMain"] p, [data-testid="stMain"] li, [data-testid="stMain"] label { color:#E2E8F0 !important; }
+[data-testid="stMain"] h1, [data-testid="stMain"] h2, [data-testid="stMain"] h3 { color:#F8FAFC !important; }
+[data-testid="stVerticalBlockBorderWrapper"] { background:#16233B !important; border-color:#334155 !important; box-shadow:none !important; }
+[data-testid="stMain"] textarea,
+[data-testid="stMain"] .stTextInput input,
+[data-testid="stMain"] .stSelectbox div[data-baseweb="select"] > div {
+  background:#0F1B30 !important; color:#E2E8F0 !important; border-color:#334155 !important; }
+.mf-note:not(.amber):not(.teal):not(.red) { background:#16233B !important; border-color:#334155 !important; color:#E2E8F0 !important; }
+.mf-meta { color:#94A3B8 !important; }
+.mf-step-title, .mf-doc-title { color:#F8FAFC !important; }
+[data-testid="stMain"] .stButton > button[kind="secondary"] {
+  background:#16233B !important; color:#E2E8F0 !important; border-color:#334155 !important; }
+[data-testid="stMain"] [data-testid="stExpander"] summary,
+[data-testid="stMain"] [data-testid="stExpander"] summary * { color:#E2E8F0 !important; }
+"""
+
+_COMPACT_CSS = """
+.block-container { padding-top:1.1rem !important; padding-bottom:2.5rem !important; }
+.mf-hero { padding:16px 18px !important; margin-bottom:12px !important; }
+.mf-hero h1 { font-size:1.35rem !important; }
+.mf-step { margin:10px 0 7px !important; }
+[data-testid="stVerticalBlockBorderWrapper"] { padding:2px !important; }
+.mf-note { padding:9px 12px !important; }
+"""
+
+_LARGE_CSS = """
+[data-testid="stMain"] p, [data-testid="stMain"] li { font-size:1.12rem !important; line-height:1.7 !important; }
+[data-testid="stMain"] textarea { font-size:1.1rem !important; }
+.mf-step-title { font-size:1.22rem !important; }
+.mf-doc-title { font-size:1.05rem !important; }
+.mf-doc-desc { font-size:.9rem !important; }
+[data-testid="stMain"] .stButton > button { font-size:1.02rem !important; }
+.mf-hero h1 { font-size:1.95rem !important; }
+.mf-hero p { font-size:1.1rem !important; }
+"""
+
+
+def _mode_css() -> str:
+    ss = st.session_state
+    parts = []
+    if ss.get("ui_dark"):
+        parts.append(_DARK_CSS)
+    if ss.get("ui_compact"):
+        parts.append(_COMPACT_CSS)
+    if ss.get("ui_large"):
+        parts.append(_LARGE_CSS)
+    return "\n".join(parts)
+
+
 def apply_branding() -> None:
-    """Injiziert das globale CSS. Einmal pro Seitenaufruf aufrufen."""
+    """Injiziert das Basis-CSS plus die aktiven Darstellungsmodi. Einmal pro Seite."""
     st.markdown(_CSS, unsafe_allow_html=True)
+    mode = _mode_css()
+    if mode:
+        st.markdown(f"<style>{mode}</style>", unsafe_allow_html=True)
 
 
 def render_logo() -> None:
