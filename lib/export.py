@@ -8,6 +8,7 @@ PDF-Button aus, statt die App abstürzen zu lassen.
 from __future__ import annotations
 
 from datetime import datetime
+from functools import lru_cache
 
 # fpdf2 (Kernschrift Helvetica) kodiert Text als Latin-1. Deutsche Umlaute sind
 # darin enthalten; einige typografische Sonderzeichen ersetzen wir vorher.
@@ -26,11 +27,14 @@ def _latin1(text: str) -> str:
     return text.encode("latin-1", "replace").decode("latin-1")
 
 
+@lru_cache(maxsize=64)
 def markdown_to_pdf(text: str, title: str) -> bytes | None:
     """Rendert die (Markdown-)Dokumentation als schlichtes, lesbares PDF.
 
-    Gibt die PDF-Bytes zurück oder None, falls fpdf fehlt oder die Erzeugung
-    fehlschlägt (die App stürzt dadurch nie ab).
+    Ergebnisse werden zwischengespeichert (lru_cache), damit z. B. die Verlaufs-
+    Suche nicht bei jedem Tastendruck alle PDFs neu erzeugt. Gibt die PDF-Bytes
+    zurück oder None, falls fpdf fehlt oder die Erzeugung fehlschlägt (die App
+    stürzt dadurch nie ab).
     """
     try:
         from fpdf import FPDF
