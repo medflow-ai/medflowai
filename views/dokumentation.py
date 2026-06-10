@@ -74,6 +74,12 @@ st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 # --------------------------------------------------------------------------- #
 # 3) Aktion
 # --------------------------------------------------------------------------- #
+def _clear_notes() -> None:
+    """Callback: läuft vor dem nächsten Rendern, daher darf das Notizfeld geleert werden."""
+    st.session_state[NOTES_KEY] = ""
+    st.session_state.pop("last_result", None)
+
+
 step(3, "Erstellen & prüfen")
 b1, b2 = st.columns([3, 1])
 with b1:
@@ -84,10 +90,7 @@ with b1:
         disabled=(not notes.strip()) or (not key_ok),
     )
 with b2:
-    if st.button("Leeren", use_container_width=True):
-        st.session_state[NOTES_KEY] = ""
-        st.session_state.pop("last_result", None)
-        st.rerun()
+    st.button("Leeren", use_container_width=True, on_click=_clear_notes)
 
 # --------------------------------------------------------------------------- #
 # Generierung
