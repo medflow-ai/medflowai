@@ -78,10 +78,11 @@ if enabled:
 else:
     note("⛔ Audit-Log ist deaktiviert. Es werden keinerlei Vorgänge protokolliert.", kind="")
 
-events = audit.read_events()
+sid = audit.session_id()
+events = audit.read_events(session=sid)
 if events:
-    st.markdown("#### Erfasste Metadaten (Vorschau)")
-    st.caption(f"{len(events)} Einträge · enthält keinen Patiententext")
+    st.markdown("#### Erfasste Metadaten dieser Sitzung")
+    st.caption(f"{len(events)} Einträge · nur diese Sitzung · enthält keinen Patiententext")
     # Nur unkritische Spalten zeigen.
     preview = [
         {
@@ -108,8 +109,8 @@ if events:
             use_container_width=True,
         )
     with d2:
-        if st.button("🗑️ Audit-Log löschen", use_container_width=True):
-            audit.clear_log()
+        if st.button("🗑️ Einträge dieser Sitzung löschen", use_container_width=True):
+            audit.clear_session(sid)
             st.rerun()
 else:
     st.caption("Noch keine Einträge erfasst.")

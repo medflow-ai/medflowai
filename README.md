@@ -7,6 +7,18 @@ ausschließlich Dokumentationsunterstützung.
 
 ---
 
+## Funktionen (v0.3)
+
+- Notizen tippen **oder per Mikrofon diktieren** (Transkription via OpenAI Whisper)
+- 5 Dokumentationstypen als Karten: Verlauf, SOAP, Patientenzusammenfassung, Überweisung, To-do
+- Ergebnis-Karte: **Kopieren** (mit Erfolgs-Feedback) + Export als **Markdown, Text, PDF**
+- Durchsuchbarer **Verlauf** als Timeline (nur Session, nicht persistent)
+- **Einstellungen**: Dunkelmodus, Kompaktmodus, Große Schrift
+- Datenschutz: kein Patiententext gespeichert, pseudonymisiertes Opt-in-Audit (nur Metadaten)
+- Modellwahl ist bewusst ausgeblendet – das System entscheidet intern
+
+---
+
 ## Schnellstart
 
 ```bash
@@ -31,24 +43,28 @@ Echte Multipage-App über `st.navigation`. Die Logik liegt in `lib/`, die Seiten
 
 ```
 medflowai/
-├── app.py                  # Einstieg: Navigation, Branding, Logo
-├── views/
-│   ├── dokumentation.py    # Kern: Notizen → Dokumentation
-│   ├── verlauf.py          # Session-Verlauf (nicht persistent)
+├── app.py                  # Einstieg: st.navigation, Branding, Logo
+├── views/                  # Seiten (bewusst NICHT "pages/" – das ist in
+│   │                       #   Streamlit reserviert und kollidiert mit st.navigation)
+│   ├── dokumentation.py    # Kern: Notizen/Diktat → Dokumentation
+│   ├── verlauf.py          # Verlauf als Timeline + Suche (nur Session)
 │   ├── datenschutz.py      # Datenfluss, Audit-Opt-in, Checkliste
-│   └── ueber.py            # Positionierung, Grenzen, Impressum
+│   ├── grenzen.py          # Grenzen / Limitations (Karten)
+│   ├── ueber.py            # Positionierung, Impressum
+│   └── einstellungen.py    # Dunkel-/Kompakt-/Großschrift-Modus
 ├── lib/
 │   ├── config.py           # Marke, Farben, Dok-Typen, Beispiele
-│   ├── branding.py         # CSS-Theme, Hero, Sidebar, Bausteine
-│   ├── llm.py              # OpenAI-Anbindung + Fehlerbehandlung
+│   ├── branding.py         # CSS-Theme + Darstellungsmodi, Hero, Sidebar
+│   ├── components.py       # Dok-Typ-Karten, Voice-Input, Ergebnis-Karte, Verlaufs-Bausteine
+│   ├── llm.py              # OpenAI: Dokumentation + Whisper-Transkription, Fehlerbehandlung
 │   ├── prompts.py          # Prompt je Dokumentationstyp
 │   ├── audit.py            # pseudonymisiertes Opt-in-Audit (nur Metadaten)
-│   └── components.py       # Ergebnis-Karte, Kopieren/Download, Verlauf
+│   └── export.py           # PDF-Erzeugung (fpdf2)
 ├── assets/                 # Logo (SVG)
 ├── .streamlit/
 │   ├── config.toml         # Navy-Theme
 │   └── secrets.toml.example
-└── requirements.txt
+└── requirements.txt        # streamlit, openai, fpdf2
 ```
 
 ---

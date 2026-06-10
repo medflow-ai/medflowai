@@ -2,6 +2,7 @@
 Beispiel-Buttons und der (session-basierte) Verlauf."""
 from __future__ import annotations
 
+import hashlib
 import json
 import uuid
 from datetime import datetime
@@ -32,7 +33,9 @@ def add_to_history(*, doc_type: DocType, text: str, model: str, elapsed_s: float
         "input_words": input_words,
         "output_words": output_words,
     }
-    st.session_state.setdefault(HISTORY_KEY, []).insert(0, item)
+    hist = st.session_state.setdefault(HISTORY_KEY, [])
+    hist.insert(0, item)
+    del hist[50:]  # Verlauf deckeln (Speicher/PDF-Cache klein halten)
 
 
 def get_history() -> list[dict]:
@@ -74,6 +77,10 @@ def voice_input() -> None:
     """Mikrofon-Aufnahme aufnehmen, per Whisper transkribieren und ins Notizfeld einfügen."""
     from lib.llm import ConfigError, LLMError, transcribe_audio
 
+    # Bestätigung nach dem Rerun anzeigen (ein Toast direkt vor st.rerun geht verloren).
+    if st.session_state.pop("_voice_done", False):
+        st.toast("Transkription eingefügt", icon="✅")
+
     with st.container(border=True):
         st.markdown(
             "<div style='font-weight:600;color:#0B1F3A;'>🎙️ Diktieren</div>"
@@ -96,7 +103,7 @@ def voice_input() -> None:
     if not data:
         return
 
-    audio_id = hash(data)
+    audio_id = hashlib.sha256(data).hexdigest()
     if st.session_state.get(_AUDIO_HASH_KEY) == audio_id:
         return  # diese Aufnahme wurde bereits transkribiert
 
@@ -112,7 +119,7 @@ def voice_input() -> None:
     if text:
         current = st.session_state.get(NOTES_KEY, "").strip()
         st.session_state[NOTES_KEY] = (current + ("\n" if current else "") + text).strip()
-        st.toast("Transkription eingefügt", icon="✅")
+        st.session_state["_voice_done"] = True
         st.rerun()
 
 
@@ -175,7 +182,9 @@ def copy_button(text: str, key: str = "cpy") -> None:
     """Echter Kopier-Button mit sichtbarem Erfolgs-Feedback (✓ Kopiert!)."""
     import streamlit.components.v1 as components
 
-    safe = json.dumps(text)
+    # json.dumps escaped "</script>" NICHT -> "<" zusätzlich neutralisieren,
+    # sonst kann LLM-Text aus dem Script-Block ausbrechen.
+    safe = json.dumps(text).replace("<", "\\u003c")
     bid = f"cpy_{key}"
     html = f"""
     <button id="{bid}" style="width:100%;padding:11px 14px;border:none;
@@ -204,18 +213,33 @@ def copy_button(text: str, key: str = "cpy") -> None:
     components.html(html, height=54)
 
 
+def get_pdf(text: str, title: str) -> bytes | None:
+    """PDF mit Cache pro Sitzung (st.session_state) statt prozessweit.
+
+    Hält Patiententext nur in der Sitzung – wird mit ihr verworfen.
+    """
+    cache = st.session_state.setdefault("_pdf_cache", {})
+    key = hashlib.sha256((title + "\x00" + text).encode("utf-8")).hexdigest()
+    if key not in cache:
+        if len(cache) > 60:
+            cache.clear()
+        cache[key] = markdown_to_pdf(text, title)
+    return cache[key]
+
+
 def render_result_card(
     *,
     text: str,
     doc_type: DocType,
     model: str,
     elapsed_s: float,
+    created_ts: str | None = None,
     key_prefix: str = "res",
     show_feedback: bool = True,
 ) -> None:
     """Rendert die Dokumentation als Karte mit Kopier-/Download-Aktionen."""
     words = len(text.split())
-    ts = datetime.now().strftime("%d.%m.%Y %H:%M")
+    ts = created_ts or datetime.now().strftime("%d.%m.%Y %H:%M")
 
     with st.container(border=True):
         # Kopfzeile
@@ -257,7 +281,7 @@ def render_result_card(
                 key=f"{key_prefix}_dl_txt",
             )
         with c3:
-            pdf_bytes = markdown_to_pdf(text, doc_type.label)
+            pdf_bytes = get_pdf(text, doc_type.label)
             if pdf_bytes:
                 st.download_button(
                     "⬇️ PDF",

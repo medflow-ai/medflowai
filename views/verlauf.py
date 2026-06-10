@@ -4,6 +4,8 @@ Weiterhin ausschließlich Session-Speicher: wird beim Neuladen automatisch gelö
 """
 from __future__ import annotations
 
+import html
+
 import streamlit as st
 
 from lib.branding import note, page_header
@@ -89,7 +91,7 @@ for item in filtered:
               <span class="mf-tag">{item['doc_icon']} {item['doc_label']}</span>
               <span class="mf-meta">{item['ts']} · {item['output_words']} Wörter · {item['model']}</span>
             </div>
-            <div class="mf-meta" style="margin-top:7px;">{item['input_preview']}</div>
+            <div class="mf-meta" style="margin-top:7px;">{html.escape(item['input_preview'])}</div>
             """,
             unsafe_allow_html=True,
         )

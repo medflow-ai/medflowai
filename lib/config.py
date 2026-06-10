@@ -5,14 +5,14 @@ konsistent und Anpassungen (Branding, neue Dok-Typen) passieren an einer Stelle.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 # --------------------------------------------------------------------------- #
 # Markendaten
 # --------------------------------------------------------------------------- #
 APP_NAME = "MedFlowAI"
 APP_TAGLINE = "KI-gestützte medizinische Dokumentation"
-APP_VERSION = "0.2.0"
+APP_VERSION = "0.3.0"
 SUPPORT_EMAIL = "support@medflowai.example"
 COMPANY = "MedFlowAI"
 
@@ -99,15 +99,6 @@ DOC_TYPES: list[DocType] = [
 ]
 
 DOC_TYPE_BY_KEY = {d.key: d for d in DOC_TYPES}
-DOC_TYPE_LABELS = [f"{d.icon}  {d.label}" for d in DOC_TYPES]
-
-
-def doc_type_from_label(label: str) -> DocType:
-    """Findet den DocType anhand des angezeigten Labels (Icon + Text)."""
-    for d in DOC_TYPES:
-        if f"{d.icon}  {d.label}" == label:
-            return d
-    return DOC_TYPES[0]
 
 
 # --------------------------------------------------------------------------- #

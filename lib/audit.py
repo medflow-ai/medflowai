@@ -45,6 +45,14 @@ def set_enabled(value: bool) -> None:
     st.session_state[_OPT_IN_KEY] = bool(value)
 
 
+def session_id() -> str:
+    """Zufällige, sitzungslokale ID – um die Audit-Vorschau auf die eigene Sitzung
+    zu beschränken (es gibt noch keine Authentifizierung)."""
+    if "_session_id" not in st.session_state:
+        st.session_state["_session_id"] = uuid.uuid4().hex
+    return st.session_state["_session_id"]
+
+
 # --------------------------------------------------------------------------- #
 # Salt für den Fingerprint
 # --------------------------------------------------------------------------- #
@@ -92,6 +100,7 @@ def record_event(
         return
     entry = {
         "id": uuid.uuid4().hex,
+        "session": session_id(),
         "ts": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "app_version": APP_VERSION,
         "doc_type": doc_type_key,
@@ -112,7 +121,8 @@ def record_event(
         pass
 
 
-def read_events(limit: int = 200) -> list[dict]:
+def read_events(limit: int = 200, session: str | None = None) -> list[dict]:
+    """Liest Audit-Einträge. Mit session=<id> nur die der eigenen Sitzung."""
     if not AUDIT_FILE.exists():
         return []
     rows: list[dict] = []
@@ -120,11 +130,42 @@ def read_events(limit: int = 200) -> list[dict]:
         with open(AUDIT_FILE, "r", encoding="utf-8") as fh:
             for line in fh:
                 line = line.strip()
-                if line:
-                    rows.append(json.loads(line))
+                if not line:
+                    continue
+                try:
+                    entry = json.loads(line)
+                except Exception:
+                    continue  # eine defekte Zeile überspringen, nicht den Rest verwerfen
+                if session is None or entry.get("session") == session:
+                    rows.append(entry)
     except Exception:
         return rows
     return rows[-limit:]
+
+
+def clear_session(session: str) -> bool:
+    """Entfernt nur die Einträge der angegebenen Sitzung (ohne Auth keine Fremddaten löschen)."""
+    try:
+        if not AUDIT_FILE.exists():
+            return True
+        kept: list[str] = []
+        with open(AUDIT_FILE, "r", encoding="utf-8") as fh:
+            for line in fh:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    entry = json.loads(line)
+                except Exception:
+                    continue
+                if entry.get("session") != session:
+                    kept.append(json.dumps(entry, ensure_ascii=False))
+        with open(AUDIT_FILE, "w", encoding="utf-8") as fh:
+            for line in kept:
+                fh.write(line + "\n")
+        return True
+    except Exception:
+        return False
 
 
 def clear_log() -> bool:

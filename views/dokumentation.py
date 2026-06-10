@@ -1,6 +1,8 @@
 """Hauptseite: Notizen → strukturierte Dokumentation."""
 from __future__ import annotations
 
+from datetime import datetime
+
 import streamlit as st
 
 from lib import audit
@@ -54,6 +56,7 @@ st.text_area(
     "Notizen",
     key=NOTES_KEY,
     height=190,
+    max_chars=8000,
     placeholder="Stichpunkte oder Fließtext zum Patientenkontakt … "
     "z. B. Beschwerden, Befunde, Vorerkrankungen, Medikation.",
     label_visibility="collapsed",
@@ -123,6 +126,8 @@ if run:
             "doc_type": doc_type.key,
             "model": result.model,
             "elapsed": result.elapsed_s,
+            "ts": datetime.now().strftime("%d.%m.%Y %H:%M"),
+            "truncated": result.truncated,
         }
         # Pseudonymisiertes Audit (nur wenn Opt-in aktiv) – kein Patiententext.
         audit.record_event(
@@ -150,10 +155,18 @@ if run:
 lr = st.session_state.get("last_result")
 if lr:
     st.markdown("### Ergebnis")
+    if lr.get("truncated"):
+        note(
+            "⚠️ <strong>Möglicherweise unvollständig:</strong> Die Ausgabe wurde an der "
+            "Längengrenze abgeschnitten. Bitte auf Vollständigkeit prüfen – ggf. die "
+            "Notizen kürzen oder die Dokumentation in Teilen erstellen.",
+            kind="amber",
+        )
     render_result_card(
         text=lr["text"],
         doc_type=DOC_TYPE_BY_KEY[lr["doc_type"]],
         model=lr["model"],
         elapsed_s=lr["elapsed"],
+        created_ts=lr.get("ts"),
         key_prefix=lr["id"],
     )

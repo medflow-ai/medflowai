@@ -29,6 +29,7 @@ class GenerationResult:
     text: str
     model: str
     elapsed_s: float
+    truncated: bool = False  # True, wenn die Ausgabe am Token-Limit abgeschnitten wurde
 
 
 def _read_api_key() -> str | None:
@@ -59,7 +60,8 @@ def _get_client():
             "Das openai-Paket ist nicht installiert. Bitte 'pip install openai' "
             "ausführen."
         ) from exc
-    return OpenAI(api_key=api_key)
+    # Timeout + ein Retry, damit ein hängender Request die UI nicht minutenlang blockiert.
+    return OpenAI(api_key=api_key, timeout=45.0, max_retries=1)
 
 
 def api_key_available() -> bool:
@@ -73,7 +75,7 @@ def generate_documentation(
     *,
     model: str = DEFAULT_MODEL,
     temperature: float = 0.2,
-    max_tokens: int = 900,
+    max_tokens: int = 1500,
 ) -> GenerationResult:
     """Erzeugt die Dokumentation. Wirft ConfigError oder LLMError mit klaren Texten."""
     import time
@@ -93,13 +95,16 @@ def generate_documentation(
         raise LLMError(_friendly_error(exc)) from exc
 
     elapsed = time.perf_counter() - start
-    text = (response.choices[0].message.content or "").strip()
+    choice = response.choices[0]
+    text = (choice.message.content or "").strip()
     if not text:
         raise LLMError(
             "Die KI hat keine Ausgabe zurückgegeben. Bitte erneut versuchen oder "
             "die Notizen etwas konkreter fassen."
         )
-    return GenerationResult(text=text, model=model, elapsed_s=elapsed)
+    # Wurde die Ausgabe am Längenlimit abgeschnitten? -> später als Warnung anzeigen.
+    truncated = getattr(choice, "finish_reason", None) == "length"
+    return GenerationResult(text=text, model=model, elapsed_s=elapsed, truncated=truncated)
 
 
 def transcribe_audio(audio_bytes: bytes, *, language: str = "de",
@@ -130,15 +135,17 @@ def _friendly_error(exc: Exception) -> str:
             "Der OpenAI-API-Key wurde nicht akzeptiert. Bitte den Key in den "
             "Streamlit-Secrets prüfen."
         )
-    if "ratelimit" in name or "rate limit" in msg or "429" in msg:
-        return (
-            "Aktuell sind zu viele Anfragen unterwegs (Rate-Limit). Bitte einen "
-            "Moment warten und erneut versuchen."
-        )
+    # Quota ZUERST prüfen: erschöpftes Guthaben kommt als RateLimitError (429),
+    # darf aber nicht als "bitte warten" fehlgemeldet werden.
     if "insufficient_quota" in msg or "quota" in msg or "billing" in msg:
         return (
             "Das OpenAI-Kontingent ist erschöpft. Bitte das Guthaben bzw. die "
             "Abrechnung im OpenAI-Konto prüfen."
+        )
+    if "ratelimit" in name or "rate limit" in msg or "429" in msg:
+        return (
+            "Aktuell sind zu viele Anfragen unterwegs (Rate-Limit). Bitte einen "
+            "Moment warten und erneut versuchen."
         )
     if "timeout" in name or "timed out" in msg or "connection" in name:
         return (
