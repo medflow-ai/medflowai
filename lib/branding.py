@@ -236,13 +236,15 @@ _LARGE_CSS = """
 
 
 def _mode_css() -> str:
+    # Liest aus dauerhaften pref_*-Schlüsseln (nicht an Widgets gebunden),
+    # damit die Einstellung über Seitenwechsel hinweg erhalten bleibt.
     ss = st.session_state
     parts = []
-    if ss.get("ui_dark"):
+    if ss.get("pref_dark"):
         parts.append(_DARK_CSS)
-    if ss.get("ui_compact"):
+    if ss.get("pref_compact"):
         parts.append(_COMPACT_CSS)
-    if ss.get("ui_large"):
+    if ss.get("pref_large"):
         parts.append(_LARGE_CSS)
     return "\n".join(parts)
 
