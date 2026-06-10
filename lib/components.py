@@ -2,12 +2,14 @@
 Beispiel-Buttons und der (session-basierte) Verlauf."""
 from __future__ import annotations
 
+import json
 import uuid
 from datetime import datetime
 
 import streamlit as st
 
 from lib.config import DOC_TYPES, DocType, EXAMPLES
+from lib.export import markdown_to_pdf
 
 NOTES_KEY = "notes_input"
 HISTORY_KEY = "history"
@@ -169,6 +171,39 @@ def _filename(doc_type: DocType, ext: str) -> str:
     return f"medflowai_{doc_type.key}_{stamp}.{ext}"
 
 
+def copy_button(text: str, key: str = "cpy") -> None:
+    """Echter Kopier-Button mit sichtbarem Erfolgs-Feedback (✓ Kopiert!)."""
+    import streamlit.components.v1 as components
+
+    safe = json.dumps(text)
+    bid = f"cpy_{key}"
+    html = f"""
+    <button id="{bid}" style="width:100%;padding:11px 14px;border:none;
+        border-radius:12px;background:#14B8A6;color:#fff;font-weight:600;
+        font-size:14px;cursor:pointer;box-shadow:0 6px 16px rgba(20,184,166,.25);
+        font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+        transition:background .15s ease;">📋 In Zwischenablage kopieren</button>
+    <script>
+    (function() {{
+      const b = document.getElementById("{bid}");
+      const label = "📋 In Zwischenablage kopieren";
+      b.addEventListener("click", async () => {{
+        try {{
+          await navigator.clipboard.writeText({safe});
+          b.textContent = "✓ Kopiert!";
+          b.style.background = "#15803D";
+          setTimeout(() => {{ b.textContent = label; b.style.background = "#14B8A6"; }}, 1800);
+        }} catch (e) {{
+          b.textContent = "Bitte Text oben manuell markieren & kopieren";
+          b.style.background = "#B45309";
+        }}
+      }});
+    }})();
+    </script>
+    """
+    components.html(html, height=54)
+
+
 def render_result_card(
     *,
     text: str,
@@ -198,13 +233,12 @@ def render_result_card(
 
         st.divider()
 
-        # Aktionen
-        c1, c2, c3 = st.columns([1.1, 1, 1])
+        # Kopieren – mit sichtbarem Erfolgs-Feedback
+        copy_button(text, key=key_prefix)
+
+        # Export: Markdown · Text · PDF
+        c1, c2, c3 = st.columns(3)
         with c1:
-            with st.popover("📋 Kopieren", use_container_width=True):
-                st.caption("Mit dem Symbol oben rechts im Block kopieren:")
-                st.code(text, language="markdown")
-        with c2:
             st.download_button(
                 "⬇️ Markdown",
                 data=text,
@@ -213,7 +247,7 @@ def render_result_card(
                 use_container_width=True,
                 key=f"{key_prefix}_dl_md",
             )
-        with c3:
+        with c2:
             st.download_button(
                 "⬇️ Text",
                 data=text,
@@ -222,6 +256,25 @@ def render_result_card(
                 use_container_width=True,
                 key=f"{key_prefix}_dl_txt",
             )
+        with c3:
+            pdf_bytes = markdown_to_pdf(text, doc_type.label)
+            if pdf_bytes:
+                st.download_button(
+                    "⬇️ PDF",
+                    data=pdf_bytes,
+                    file_name=_filename(doc_type, "pdf"),
+                    mime="application/pdf",
+                    use_container_width=True,
+                    key=f"{key_prefix}_dl_pdf",
+                )
+            else:
+                st.button(
+                    "⬇️ PDF",
+                    disabled=True,
+                    use_container_width=True,
+                    key=f"{key_prefix}_pdf_off",
+                    help="PDF-Export wird nach dem nächsten Deploy verfügbar.",
+                )
 
         # Pflichthinweis direkt am Ergebnis
         st.markdown(
