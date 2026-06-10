@@ -1,7 +1,7 @@
-"""Branding & UI-Schicht: CSS-Theme, Seitenkopf, Sidebar-Extras, kleine Bausteine.
+"""Branding & UI-Schicht: CSS-Theme, Seitenkopf, Sidebar, Step-Header, Bausteine.
 
-Hier liegt das gesamte visuelle Erscheinungsbild. Die Seiten (views/) bleiben
-dadurch schlank und konsistent.
+Das gesamte visuelle Erscheinungsbild liegt hier. Premium-Healthcare-Look:
+tiefes Navy, Türkis-Akzent, weiße Flächen, weiche Schatten, großzügiges Spacing.
 """
 from __future__ import annotations
 
@@ -23,15 +23,22 @@ _CSS = f"""
   --accent:{C.ACCENT}; --accent-400:{C.ACCENT_400}; --accent-soft:{C.ACCENT_SOFT};
   --ink:{C.INK}; --muted:{C.MUTED}; --line:{C.LINE}; --surface:{C.SURFACE};
   --success:{C.SUCCESS}; --warning:{C.WARNING}; --danger:{C.DANGER};
+  --radius:16px; --shadow-sm:0 1px 2px rgba(16,24,40,.05);
+  --shadow:0 4px 14px rgba(16,24,40,.06), 0 1px 3px rgba(16,24,40,.05);
+  --shadow-lg:0 18px 40px rgba(11,31,58,.14);
 }}
 
-/* ---------- Grundlayout ---------- */
-.block-container {{ padding-top: 2.2rem; padding-bottom: 4rem; max-width: 1040px; }}
-[data-testid="stMain"] h1, [data-testid="stMain"] h2, [data-testid="stMain"] h3 {{
-  color: var(--navy-900); letter-spacing: -0.01em;
+/* ---------- Grundlayout & Typografie ---------- */
+html, body, [class*="css"] {{ -webkit-font-smoothing: antialiased; }}
+.block-container {{ padding-top: 2.4rem; padding-bottom: 5rem; max-width: 1000px; }}
+[data-testid="stMain"] {{ color: var(--ink); }}
+[data-testid="stMain"] h1,[data-testid="stMain"] h2,[data-testid="stMain"] h3 {{
+  color: var(--navy-900); letter-spacing: -0.018em; font-weight: 700;
 }}
-[data-testid="stMain"] p, [data-testid="stMain"] li {{ color: var(--ink); }}
-footer {{ visibility: hidden; }}
+[data-testid="stMain"] p, [data-testid="stMain"] li {{ color: var(--ink); line-height: 1.6; }}
+[data-testid="stMain"] a {{ color: #0FA295; }}
+footer, [data-testid="stToolbar"] {{ visibility: hidden; }}
+hr {{ border-color: var(--line); }}
 
 /* ---------- Sidebar: tiefes Navy ---------- */
 section[data-testid="stSidebar"] {{
@@ -42,34 +49,35 @@ section[data-testid="stSidebar"] * {{ color: #E2E8F0; }}
 section[data-testid="stSidebar"] h1,
 section[data-testid="stSidebar"] h2,
 section[data-testid="stSidebar"] h3 {{ color: #FFFFFF; }}
-
-/* Navigationslinks (st.navigation) */
 section[data-testid="stSidebar"] [data-testid="stSidebarNav"] a {{
-  border-radius: 10px; margin: 2px 6px; padding: 6px 10px;
-  color: #CBD5E1 !important; transition: all .15s ease;
+  border-radius: 10px; margin: 2px 8px; padding: 8px 12px;
+  color: #CBD5E1 !important; transition: all .15s ease; font-weight: 500;
 }}
 section[data-testid="stSidebar"] [data-testid="stSidebarNav"] a:hover {{
   background: rgba(45,212,191,.14); color: #FFFFFF !important;
 }}
 section[data-testid="stSidebar"] [data-testid="stSidebarNav"] a[aria-current="page"] {{
-  background: rgba(20,184,166,.22); color: #FFFFFF !important;
+  background: rgba(20,184,166,.20); color: #FFFFFF !important;
   box-shadow: inset 3px 0 0 var(--accent-400);
 }}
 section[data-testid="stSidebar"] [data-testid="stSidebarNav"] span {{ color: inherit !important; }}
 
-/* ---------- Karten (st.container(border=True)) ---------- */
+/* ---------- Karten ---------- */
 [data-testid="stVerticalBlockBorderWrapper"] {{
   background: #FFFFFF;
   border: 1px solid var(--line) !important;
-  border-radius: 14px !important;
-  box-shadow: 0 1px 2px rgba(16,24,40,.04), 0 6px 16px rgba(16,24,40,.05);
-  padding: 4px 2px;
+  border-radius: var(--radius) !important;
+  box-shadow: var(--shadow);
+  padding: 6px 4px;
 }}
 
 /* ---------- Eingaben ---------- */
-textarea, .stTextInput input, .stSelectbox div[data-baseweb="select"] > div {{
-  border-radius: 10px !important;
+textarea, .stTextInput input,
+.stSelectbox div[data-baseweb="select"] > div {{
+  border-radius: 12px !important; border-color: var(--line) !important;
+  font-size: 1rem !important;
 }}
+textarea {{ padding: 14px !important; line-height: 1.55 !important; }}
 textarea:focus, .stTextInput input:focus {{
   border-color: var(--accent) !important;
   box-shadow: 0 0 0 3px rgba(20,184,166,.18) !important;
@@ -77,43 +85,66 @@ textarea:focus, .stTextInput input:focus {{
 
 /* ---------- Buttons ---------- */
 .stButton > button, .stDownloadButton > button {{
-  border-radius: 10px; font-weight: 600; transition: all .15s ease;
+  border-radius: 12px; font-weight: 600; padding: .5rem 1rem;
+  transition: transform .12s ease, background .15s ease, border-color .15s ease, box-shadow .15s ease;
 }}
-.stButton > button[kind="primary"] {{
-  background: var(--accent); border: 1px solid var(--accent);
+.stButton > button[kind="primary"], .stDownloadButton > button {{
+  background: var(--accent); border: 1px solid var(--accent); color: #fff;
+  box-shadow: 0 6px 16px rgba(20,184,166,.25);
 }}
-.stButton > button[kind="primary"]:hover {{
-  background: #0FA295; border-color: #0FA295;
+.stButton > button[kind="primary"]:hover, .stDownloadButton > button:hover {{
+  background: #0FA295; border-color: #0FA295; transform: translateY(-1px);
 }}
 .stButton > button[kind="secondary"] {{
-  border: 1px solid var(--line); color: var(--navy-800);
+  border: 1px solid var(--line); color: var(--navy-800); background:#fff;
 }}
 .stButton > button[kind="secondary"]:hover {{
-  border-color: var(--accent); color: var(--navy-900);
+  border-color: var(--accent); color: var(--navy-900); transform: translateY(-1px);
 }}
 
 /* ---------- Hero / Seitenkopf ---------- */
 .mf-hero {{
+  position: relative; overflow: hidden;
   background: linear-gradient(135deg, var(--navy-900) 0%, var(--navy-700) 100%);
-  border-radius: 16px; padding: 22px 26px; margin-bottom: 18px; color: #fff;
-  box-shadow: 0 10px 30px rgba(11,31,58,.18);
+  border-radius: 20px; padding: 26px 30px; margin-bottom: 22px; color: #fff;
+  box-shadow: var(--shadow-lg);
 }}
-.mf-hero h1 {{ color:#fff !important; margin:0; font-size: 1.55rem; letter-spacing:-.02em; }}
-.mf-hero p {{ color:#C7D2E0 !important; margin:.35rem 0 0; font-size: .98rem; }}
+.mf-hero::after {{
+  content:""; position:absolute; right:-60px; top:-60px; width:220px; height:220px;
+  background: radial-gradient(circle, rgba(45,212,191,.22), transparent 70%);
+}}
+.mf-hero h1 {{ color:#fff !important; margin:0; font-size: 1.7rem; letter-spacing:-.025em; }}
+.mf-hero p {{ color:#C7D2E0 !important; margin:.4rem 0 0; font-size: 1rem; max-width: 60ch; }}
 .mf-hero .mf-eyebrow {{
-  display:inline-block; font-size:.72rem; font-weight:700; letter-spacing:.12em;
-  text-transform:uppercase; color: var(--accent-400); margin-bottom:.4rem;
+  display:inline-block; font-size:.72rem; font-weight:700; letter-spacing:.14em;
+  text-transform:uppercase; color: var(--accent-400); margin-bottom:.5rem;
 }}
+
+/* ---------- Step-Header ---------- */
+.mf-step {{ display:flex; align-items:center; gap:11px; margin: 18px 0 12px; }}
+.mf-step-num {{
+  width:28px; height:28px; border-radius:50%; flex:0 0 auto;
+  background: var(--accent); color:#fff; font-weight:700; font-size:.9rem;
+  display:inline-flex; align-items:center; justify-content:center;
+  box-shadow: 0 4px 10px rgba(20,184,166,.3);
+}}
+.mf-step-title {{ font-weight:700; color:var(--navy-900); font-size:1.08rem; letter-spacing:-.01em; }}
+
+/* ---------- Dokumentationstyp-Karten ---------- */
+.mf-doc-card {{ text-align:center; padding: 10px 6px 2px; }}
+.mf-doc-icon {{ font-size: 1.8rem; line-height:1; margin-bottom:8px; }}
+.mf-doc-title {{ font-weight:700; color: var(--navy-900); font-size:.96rem; }}
+.mf-doc-title.sel {{ color: #0F766E; }}
+.mf-doc-desc {{ color: var(--muted); font-size:.78rem; margin-top:5px; min-height: 2.6em; line-height:1.4; }}
+.mf-doc-check {{ font-size:.72rem; font-weight:700; color:#0F766E; margin:7px 0 2px; }}
 
 /* ---------- Badges ---------- */
-.mf-badges {{ display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }}
+.mf-badges {{ display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; }}
 .mf-badge {{
   display:inline-flex; align-items:center; gap:6px;
-  font-size:.74rem; font-weight:600; padding:4px 10px; border-radius:999px;
+  font-size:.74rem; font-weight:600; padding:4px 11px; border-radius:999px;
   background: rgba(255,255,255,.10); color:#E2E8F0; border:1px solid rgba(255,255,255,.16);
 }}
-
-/* Helle Badges für den Inhaltsbereich */
 .mf-tag {{
   display:inline-flex; align-items:center; gap:6px; font-size:.74rem; font-weight:600;
   padding:3px 10px; border-radius:999px; background: var(--accent-soft);
@@ -123,7 +154,7 @@ textarea:focus, .stTextInput input:focus {{
 
 /* ---------- Hinweis-Boxen ---------- */
 .mf-note {{
-  border-radius:12px; padding:12px 14px; font-size:.9rem; line-height:1.5;
+  border-radius:14px; padding:13px 15px; font-size:.9rem; line-height:1.55;
   border:1px solid var(--line); background: var(--surface); color: var(--ink);
 }}
 .mf-note.amber {{ background:#FFFBEB; border-color:#FDE68A; color:#92400E; }}
@@ -137,17 +168,17 @@ textarea:focus, .stTextInput input:focus {{
   gap:10px; flex-wrap:wrap; margin-bottom:4px;
 }}
 .mf-meta {{ color: var(--muted); font-size:.8rem; }}
-.mf-result-body {{ line-height:1.62; }}
-.mf-result-body h1,.mf-result-body h2,.mf-result-body h3 {{ font-size:1.02rem; margin:.7rem 0 .3rem; }}
 
 /* Sidebar-Fußzeile */
 .mf-sb-foot {{ font-size:.74rem; color:#94A3B8; line-height:1.5; }}
 
 /* ---------- Responsive ---------- */
 @media (max-width: 640px) {{
-  .block-container {{ padding-top: 1.3rem; }}
-  .mf-hero {{ padding:18px; }}
-  .mf-hero h1 {{ font-size:1.3rem; }}
+  .block-container {{ padding-top: 1.4rem; padding-left: .8rem; padding-right: .8rem; }}
+  .mf-hero {{ padding:20px; border-radius:16px; }}
+  .mf-hero h1 {{ font-size:1.35rem; }}
+  .mf-hero p {{ font-size:.94rem; }}
+  .mf-doc-desc {{ min-height: 0; }}
 }}
 </style>
 """
@@ -165,7 +196,6 @@ def render_logo() -> None:
     try:
         st.logo(str(logo), icon_image=str(icon))
     except Exception:
-        # Ältere Streamlit-Version ohne st.logo: Fallback in der Sidebar.
         st.sidebar.markdown(f"### {C.APP_NAME}")
 
 
@@ -213,6 +243,15 @@ def page_header(title: str, subtitle: str = "", eyebrow: str = "", badges: list[
           {badges_html}
         </div>
         """,
+        unsafe_allow_html=True,
+    )
+
+
+def step(num: int, title: str) -> None:
+    """Nummerierter Schritt-Header für den Step-by-Step-Flow."""
+    st.markdown(
+        f"<div class='mf-step'><span class='mf-step-num'>{num}</span>"
+        f"<span class='mf-step-title'>{title}</span></div>",
         unsafe_allow_html=True,
     )
 

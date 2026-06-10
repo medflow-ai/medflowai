@@ -4,14 +4,15 @@ from __future__ import annotations
 import streamlit as st
 
 from lib import audit
-from lib.branding import note, page_header
+from lib.branding import note, page_header, step
 from lib.components import (
     NOTES_KEY,
     add_to_history,
+    doc_type_selector,
     example_buttons,
     render_result_card,
 )
-from lib.config import DEFAULT_MODEL, DOC_TYPE_BY_KEY, DOC_TYPES
+from lib.config import DOC_TYPE_BY_KEY
 from lib.llm import ConfigError, LLMError, api_key_available, generate_documentation
 
 page_header(
@@ -44,7 +45,7 @@ if not key_ok:
 # --------------------------------------------------------------------------- #
 # 1) Notizen
 # --------------------------------------------------------------------------- #
-st.markdown("#### 1 · Arzt-Notizen / Gesprächsinhalt")
+step(1, "Arzt-Notizen / Gesprächsinhalt")
 st.session_state.setdefault(NOTES_KEY, "")
 example_buttons()
 st.text_area(
@@ -63,32 +64,15 @@ st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
 # --------------------------------------------------------------------------- #
 # 2) Dokumentationstyp
 # --------------------------------------------------------------------------- #
-st.markdown("#### 2 · Art der Dokumentation")
-idx = st.radio(
-    "Dokumentationstyp",
-    options=list(range(len(DOC_TYPES))),
-    format_func=lambda i: f"{DOC_TYPES[i].icon}  {DOC_TYPES[i].label}",
-    captions=[d.short for d in DOC_TYPES],
-    label_visibility="collapsed",
-    key="doc_type_idx",
-)
-doc_type = DOC_TYPES[idx]
-
-# Erweiterte Optionen
-with st.expander("Erweiterte Optionen"):
-    model = st.selectbox(
-        "Modell",
-        options=[DEFAULT_MODEL, "gpt-4o"],
-        index=0,
-        help="gpt-4o-mini ist schnell und günstig; gpt-4o liefert bei komplexen "
-        "Notizen etwas präzisere Formulierungen.",
-    )
+step(2, "Art der Dokumentation")
+doc_type = doc_type_selector()
 
 st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 
 # --------------------------------------------------------------------------- #
 # 3) Aktion
 # --------------------------------------------------------------------------- #
+step(3, "Erstellen & prüfen")
 b1, b2 = st.columns([3, 1])
 with b1:
     run = st.button(
@@ -112,7 +96,7 @@ if run:
     with st.status("KI verarbeitet die Notizen …", expanded=True) as status:
         st.write("Eingaben werden geprüft …")
         try:
-            result = generate_documentation(notes, doc_type, model=model)
+            result = generate_documentation(notes, doc_type)
         except (ConfigError, LLMError) as exc:
             error_msg = str(exc)
             status.update(label="Erstellung fehlgeschlagen", state="error")

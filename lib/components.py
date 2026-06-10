@@ -7,7 +7,7 @@ from datetime import datetime
 
 import streamlit as st
 
-from lib.config import DocType, EXAMPLES
+from lib.config import DOC_TYPES, DocType, EXAMPLES
 
 NOTES_KEY = "notes_input"
 HISTORY_KEY = "history"
@@ -60,6 +60,53 @@ def example_buttons() -> None:
                 args=(ex.text,),
                 use_container_width=True,
             )
+
+
+# --------------------------------------------------------------------------- #
+# Dokumentationstyp-Auswahl als Karten
+# --------------------------------------------------------------------------- #
+DOC_TYPE_IDX_KEY = "doc_type_idx"
+
+
+def doc_type_selector() -> DocType:
+    """Zeigt die Dokumentationstypen als auswählbare Karten und gibt den gewählten Typ zurück."""
+    if DOC_TYPE_IDX_KEY not in st.session_state:
+        st.session_state[DOC_TYPE_IDX_KEY] = 0
+    selected = st.session_state[DOC_TYPE_IDX_KEY]
+
+    per_row = 3
+    for start in range(0, len(DOC_TYPES), per_row):
+        cols = st.columns(per_row)
+        for col_i in range(per_row):
+            gi = start + col_i
+            if gi >= len(DOC_TYPES):
+                continue
+            dt = DOC_TYPES[gi]
+            is_sel = gi == selected
+            with cols[col_i]:
+                with st.container(border=True):
+                    title_cls = "mf-doc-title sel" if is_sel else "mf-doc-title"
+                    if is_sel:
+                        check = "<div class='mf-doc-check'>✓ Ausgewählt</div>"
+                    else:
+                        check = "<div class='mf-doc-check' style='visibility:hidden'>•</div>"
+                    st.markdown(
+                        f"<div class='mf-doc-card'>"
+                        f"<div class='mf-doc-icon'>{dt.icon}</div>"
+                        f"<div class='{title_cls}'>{dt.label}</div>"
+                        f"<div class='mf-doc-desc'>{dt.short}</div>"
+                        f"{check}</div>",
+                        unsafe_allow_html=True,
+                    )
+                    if st.button(
+                        "Ausgewählt" if is_sel else "Auswählen",
+                        key=f"dtbtn_{dt.key}",
+                        type="primary" if is_sel else "secondary",
+                        use_container_width=True,
+                    ):
+                        st.session_state[DOC_TYPE_IDX_KEY] = gi
+                        st.rerun()
+    return DOC_TYPES[st.session_state[DOC_TYPE_IDX_KEY]]
 
 
 # --------------------------------------------------------------------------- #
