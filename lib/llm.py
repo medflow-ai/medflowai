@@ -102,6 +102,25 @@ def generate_documentation(
     return GenerationResult(text=text, model=model, elapsed_s=elapsed)
 
 
+def transcribe_audio(audio_bytes: bytes, *, language: str = "de",
+                     model: str = "whisper-1") -> str:
+    """Wandelt eine Audioaufnahme (WAV-Bytes) per Whisper in Text um.
+
+    Wirft ConfigError (kein Key) oder LLMError (Transkriptionsfehler) mit
+    verständlichen Meldungen.
+    """
+    client = _get_client()  # kann ConfigError werfen
+    try:
+        result = client.audio.transcriptions.create(
+            model=model,
+            file=("aufnahme.wav", audio_bytes),
+            language=language,
+        )
+    except Exception as exc:
+        raise LLMError(_friendly_error(exc)) from exc
+    return (getattr(result, "text", "") or "").strip()
+
+
 def _friendly_error(exc: Exception) -> str:
     """Übersetzt technische Ausnahmen in eine verständliche, knappe Meldung."""
     name = exc.__class__.__name__.lower()

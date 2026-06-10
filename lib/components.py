@@ -63,6 +63,58 @@ def example_buttons() -> None:
 
 
 # --------------------------------------------------------------------------- #
+# Voice-Input (Diktat → Transkription)
+# --------------------------------------------------------------------------- #
+_AUDIO_HASH_KEY = "last_audio_hash"
+
+
+def voice_input() -> None:
+    """Mikrofon-Aufnahme aufnehmen, per Whisper transkribieren und ins Notizfeld einfügen."""
+    from lib.llm import ConfigError, LLMError, transcribe_audio
+
+    with st.container(border=True):
+        st.markdown(
+            "<div style='font-weight:600;color:#0B1F3A;'>🎙️ Diktieren</div>"
+            "<div style='color:#64748B;font-size:.85rem;margin-bottom:8px;'>"
+            "Notizen einfach einsprechen – der Text wird automatisch unten eingefügt.</div>",
+            unsafe_allow_html=True,
+        )
+        try:
+            audio = st.audio_input("Aufnahme", label_visibility="collapsed", key="voice_audio")
+        except Exception:
+            st.caption("Spracheingabe wird von dieser Streamlit-Version nicht unterstützt.")
+            return
+
+    if audio is None:
+        return
+    try:
+        data = audio.getvalue()
+    except Exception:
+        return
+    if not data:
+        return
+
+    audio_id = hash(data)
+    if st.session_state.get(_AUDIO_HASH_KEY) == audio_id:
+        return  # diese Aufnahme wurde bereits transkribiert
+
+    with st.spinner("Transkribiere Aufnahme …"):
+        try:
+            text = transcribe_audio(data)
+        except (ConfigError, LLMError) as exc:
+            st.session_state[_AUDIO_HASH_KEY] = audio_id  # nicht endlos neu versuchen
+            st.error(str(exc))
+            return
+
+    st.session_state[_AUDIO_HASH_KEY] = audio_id
+    if text:
+        current = st.session_state.get(NOTES_KEY, "").strip()
+        st.session_state[NOTES_KEY] = (current + ("\n" if current else "") + text).strip()
+        st.toast("Transkription eingefügt", icon="✅")
+        st.rerun()
+
+
+# --------------------------------------------------------------------------- #
 # Dokumentationstyp-Auswahl als Karten
 # --------------------------------------------------------------------------- #
 DOC_TYPE_IDX_KEY = "doc_type_idx"

@@ -11,6 +11,7 @@ from lib.components import (
     doc_type_selector,
     example_buttons,
     render_result_card,
+    voice_input,
 )
 from lib.config import DOC_TYPE_BY_KEY
 from lib.llm import ConfigError, LLMError, api_key_available, generate_documentation
@@ -47,6 +48,7 @@ if not key_ok:
 # --------------------------------------------------------------------------- #
 step(1, "Arzt-Notizen / Gesprächsinhalt")
 st.session_state.setdefault(NOTES_KEY, "")
+voice_input()
 example_buttons()
 st.text_area(
     "Notizen",
