@@ -96,6 +96,46 @@ DOC_TYPES: list[DocType] = [
             "Abklärung – als Checkliste fürs Praxisteam."
         ),
     ),
+    DocType(
+        key="behandlungsplan",
+        label="Behandlungsplan",
+        icon="🗒️",
+        short="Strukturierter Behandlungs-/Therapieplan",
+        description=(
+            "Geplante Maßnahmen, Medikation, Kontrollen und nächste Schritte – "
+            "als übersichtlicher Plan."
+        ),
+    ),
+    DocType(
+        key="gespraech",
+        label="Gesprächszusammenfassung",
+        icon="🗣️",
+        short="Kompakte Zusammenfassung des Termins/Gesprächs",
+        description=(
+            "Fasst Anlass, besprochene Themen, Vereinbarungen und nächste Schritte "
+            "des Gesprächs zusammen."
+        ),
+    ),
+    DocType(
+        key="verlaufskontrolle",
+        label="Verlaufskontrolle (chronisch)",
+        icon="🔁",
+        short="Kontrolle bei chronischer Erkrankung",
+        description=(
+            "Verlaufskontrolle bei chronischer Erkrankung: aktuelle Werte, "
+            "Veränderung, Therapieanpassung, nächste Kontrolle."
+        ),
+    ),
+    DocType(
+        key="custom",
+        label="Eigene Vorlage",
+        icon="✏️",
+        short="Struktur selbst frei vorgeben",
+        description=(
+            "Du bestimmst selbst, wie die Dokumentation aufgebaut sein soll – "
+            "eigene Abschnitte und Format frei definierbar."
+        ),
+    ),
 ]
 
 DOC_TYPE_BY_KEY = {d.key: d for d in DOC_TYPES}

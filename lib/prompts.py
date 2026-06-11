@@ -78,12 +78,55 @@ _TEMPLATES: dict[str, str] = {
         "Anweisung)\n"
         "- Abschnitt 'Offene Punkte' für Fehlendes"
     ),
+    "behandlungsplan": (
+        "Erstelle einen strukturierten Behandlungsplan auf Basis der Notizen.\n"
+        "Struktur:\n"
+        "1. Aktuelle Situation / Problem(e)\n"
+        "2. Therapieziele\n"
+        "3. Geplante Maßnahmen (medikamentös und nicht-medikamentös – nur das aus "
+        "den Notizen Genannte)\n"
+        "4. Kontrollen / Verlaufsparameter\n"
+        "5. Nächster Termin / Wiedervorstellung\n"
+        "6. Offene Punkte"
+    ),
+    "gespraech": (
+        "Fasse den Gesprächsinhalt des Termins kompakt zusammen.\n"
+        "Struktur:\n"
+        "1. Anlass des Gesprächs\n"
+        "2. Besprochene Themen\n"
+        "3. Vereinbarungen / Empfehlungen\n"
+        "4. Nächste Schritte\n"
+        "5. Offene Punkte"
+    ),
+    "verlaufskontrolle": (
+        "Erstelle eine Verlaufskontrolle bei (chronischer) Erkrankung.\n"
+        "Struktur:\n"
+        "1. Grunderkrankung / Kontext\n"
+        "2. Aktueller Status & Messwerte\n"
+        "3. Veränderung seit der letzten Kontrolle\n"
+        "4. Therapie / Anpassungen\n"
+        "5. Nächste Kontrolle\n"
+        "6. Offene Punkte"
+    ),
 }
 
 
-def build_messages(doc_type: DocType, notes: str) -> list[dict]:
-    """Baut die Chat-Messages für die OpenAI-API."""
-    task = _TEMPLATES.get(doc_type.key, _TEMPLATES["verlauf"])
+def build_messages(doc_type: DocType, notes: str, custom_instruction: str | None = None) -> list[dict]:
+    """Baut die Chat-Messages für die OpenAI-API.
+
+    Bei doc_type 'custom' wird die freie Vorgabe der Ärztin/des Arztes als Aufgabe
+    verwendet (die Leitplanken im System-Prompt gelten weiterhin).
+    """
+    if doc_type.key == "custom" and custom_instruction and custom_instruction.strip():
+        task = (
+            "Erstelle die Dokumentation streng nach folgender Vorgabe der "
+            "Ärztin/des Arztes. Die obigen Regeln gelten unverändert weiter "
+            "(keine Diagnose, ausschließlich Angaben aus den Notizen, Fehlendes "
+            "unter 'Offene Punkte'):\n"
+            f"{custom_instruction.strip()}"
+        )
+    else:
+        task = _TEMPLATES.get(doc_type.key, _TEMPLATES["verlauf"])
     user_prompt = (
         f"AUFGABE: {task}\n\n"
         f"ARZT-NOTIZEN (einzige Informationsquelle):\n\"\"\"\n{notes.strip()}\n\"\"\"\n\n"

@@ -73,6 +73,7 @@ def generate_documentation(
     notes: str,
     doc_type: DocType,
     *,
+    custom_instruction: str | None = None,
     model: str = DEFAULT_MODEL,
     temperature: float = 0.2,
     max_tokens: int = 1500,
@@ -81,7 +82,7 @@ def generate_documentation(
     import time
 
     client = _get_client()  # kann ConfigError werfen
-    messages = build_messages(doc_type, notes)
+    messages = build_messages(doc_type, notes, custom_instruction)
 
     start = time.perf_counter()
     try:

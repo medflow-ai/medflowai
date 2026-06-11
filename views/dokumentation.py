@@ -72,6 +72,18 @@ st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
 step(2, "Art der Dokumentation")
 doc_type = doc_type_selector()
 
+custom_instruction = None
+if doc_type.key == "custom":
+    st.caption("Eigene Vorlage – gewünschte Struktur/Abschnitte vorgeben:")
+    custom_instruction = st.text_area(
+        "Eigene Vorlage",
+        key="custom_template",
+        height=130,
+        max_chars=1500,
+        placeholder="z. B.:\nAnamnese\nBefund\nBeurteilung\nProcedere",
+        label_visibility="collapsed",
+    )
+
 st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 
 # --------------------------------------------------------------------------- #
@@ -104,7 +116,7 @@ if run:
     with st.status("KI verarbeitet die Notizen …", expanded=True) as status:
         st.write("Eingaben werden geprüft …")
         try:
-            result = generate_documentation(notes, doc_type)
+            result = generate_documentation(notes, doc_type, custom_instruction=custom_instruction)
         except (ConfigError, LLMError) as exc:
             error_msg = str(exc)
             status.update(label="Erstellung fehlgeschlagen", state="error")
