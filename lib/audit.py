@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import os
 import secrets
 import uuid
@@ -29,6 +30,8 @@ from pathlib import Path
 import streamlit as st
 
 from lib.config import APP_VERSION
+
+logger = logging.getLogger(__name__)
 
 AUDIT_FILE = Path(__file__).resolve().parent.parent / "audit_log.jsonl"
 _OPT_IN_KEY = "audit_opt_in"
@@ -116,9 +119,13 @@ def record_event(
     try:
         with open(AUDIT_FILE, "a", encoding="utf-8") as fh:
             fh.write(json.dumps(entry, ensure_ascii=False) + "\n")
-    except Exception:
-        # Protokollierung darf den Arbeitsfluss niemals blockieren.
-        pass
+        try:
+            os.chmod(AUDIT_FILE, 0o600)  # nur Eigentümer darf lesen/schreiben (auch bei Bestandsdatei)
+        except OSError:
+            pass
+    except Exception as exc:
+        # Protokollierung darf den Arbeitsfluss niemals blockieren – aber nicht stumm.
+        logger.warning("Audit-Eintrag konnte nicht geschrieben werden: %s", exc)
 
 
 def read_events(limit: int = 200, session: str | None = None) -> list[dict]:
@@ -138,7 +145,8 @@ def read_events(limit: int = 200, session: str | None = None) -> list[dict]:
                     continue  # eine defekte Zeile überspringen, nicht den Rest verwerfen
                 if session is None or entry.get("session") == session:
                     rows.append(entry)
-    except Exception:
+    except Exception as exc:
+        logger.warning("Audit-Log konnte nicht gelesen werden: %s", exc)
         return rows
     return rows[-limit:]
 
@@ -164,7 +172,8 @@ def clear_session(session: str) -> bool:
             for line in kept:
                 fh.write(line + "\n")
         return True
-    except Exception:
+    except Exception as exc:
+        logger.warning("Audit-Log (Sitzung) konnte nicht bereinigt werden: %s", exc)
         return False
 
 

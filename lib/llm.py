@@ -8,6 +8,7 @@ Wichtige Unterschiede zum MVP:
 from __future__ import annotations
 
 import os
+import time
 from dataclasses import dataclass
 
 import streamlit as st
@@ -80,8 +81,6 @@ def generate_documentation(
     max_tokens: int = 1500,
 ) -> GenerationResult:
     """Erzeugt die Dokumentation. Wirft ConfigError oder LLMError mit klaren Texten."""
-    import time
-
     client = _get_client()  # kann ConfigError werfen
     messages = build_messages(doc_type, notes, custom_instruction, language)
 

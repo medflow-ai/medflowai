@@ -240,11 +240,11 @@ def _mode_css() -> str:
     # damit die Einstellung über Seitenwechsel hinweg erhalten bleibt.
     ss = st.session_state
     parts = []
-    if ss.get("pref_dark"):
+    if ss.get(C.PREF_DARK):
         parts.append(_DARK_CSS)
-    if ss.get("pref_compact"):
+    if ss.get(C.PREF_COMPACT):
         parts.append(_COMPACT_CSS)
-    if ss.get("pref_large"):
+    if ss.get(C.PREF_LARGE):
         parts.append(_LARGE_CSS)
     return "\n".join(parts)
 

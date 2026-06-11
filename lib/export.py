@@ -7,7 +7,10 @@ PDF-Button aus, statt die App abstürzen zu lassen.
 """
 from __future__ import annotations
 
+import logging
 from datetime import datetime
+
+logger = logging.getLogger(__name__)
 
 # fpdf2 (Kernschrift Helvetica) kodiert Text als Latin-1. Deutsche Umlaute sind
 # darin enthalten; einige typografische Sonderzeichen ersetzen wir vorher.
@@ -36,7 +39,10 @@ def markdown_to_pdf(text: str, title: str) -> bytes | None:
     """
     try:
         from fpdf import FPDF
+    except Exception:
+        return None  # fpdf nicht installiert -> PDF-Button wird ausgeblendet
 
+    try:
         # Jede Zeile beginnt wieder am linken Rand und rückt nach unten,
         # damit immer die volle Breite verfügbar ist.
         def line(txt: str, size: int, bold: bool = False, italic: bool = False,
@@ -76,5 +82,6 @@ def markdown_to_pdf(text: str, title: str) -> bytes | None:
              8, italic=True, gray=True, height=4)
 
         return bytes(pdf.output())
-    except Exception:
+    except Exception as exc:
+        logger.warning("PDF-Erzeugung fehlgeschlagen: %s", exc)
         return None

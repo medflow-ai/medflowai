@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import streamlit as st
 
+from lib import config as C
 from lib.branding import note, page_header
 
 page_header(
@@ -19,9 +20,9 @@ page_header(
 
 # (pref_key, widget_key, Titel, Beschreibung)
 OPTIONS = [
-    ("pref_dark", "tg_dark", "🌙 Dunkelmodus", "Dunkle Oberfläche – angenehmer bei wenig Licht."),
-    ("pref_compact", "tg_compact", "↕️ Kompaktmodus", "Weniger Abstände – mehr Inhalt auf einen Blick."),
-    ("pref_large", "tg_large", "🔠 Große Schrift", "Größere Schrift für bessere Lesbarkeit."),
+    (C.PREF_DARK, "tg_dark", "🌙 Dunkelmodus", "Dunkle Oberfläche – angenehmer bei wenig Licht."),
+    (C.PREF_COMPACT, "tg_compact", "↕️ Kompaktmodus", "Weniger Abstände – mehr Inhalt auf einen Blick."),
+    (C.PREF_LARGE, "tg_large", "🔠 Große Schrift", "Größere Schrift für bessere Lesbarkeit."),
 ]
 
 # Dauerhafte Werte vorbelegen und Schalter daraus initialisieren.

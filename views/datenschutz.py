@@ -24,23 +24,25 @@ with c1:
     with st.container(border=True):
         st.markdown("**1 · Eingabe**")
         st.markdown(
-            "Die Notizen werden im Browser eingegeben und verschlüsselt (TLS) "
-            "übertragen. Empfehlung: keine direkt identifizierenden Daten."
+            "Notizen werden getippt **oder per Mikrofon diktiert** und "
+            "verschlüsselt (TLS) übertragen. Empfehlung: keine direkt "
+            "identifizierenden Daten."
         )
 with c2:
     with st.container(border=True):
         st.markdown("**2 · KI-Verarbeitung**")
         st.markdown(
-            "Die Verarbeitung erfolgt über die **OpenAI-API**. Dabei verlässt der "
-            "Text die Anwendung und wird bei einem Auftragsverarbeiter (ggf. außerhalb "
-            "der EU) verarbeitet."
+            "**Notizen und Diktat-Audio** gehen zur Verarbeitung an die "
+            "**OpenAI-API** (Text-Modell bzw. Whisper für die Transkription) – "
+            "ein Auftragsverarbeiter ggf. außerhalb der EU."
         )
 with c3:
     with st.container(border=True):
         st.markdown("**3 · Ergebnis**")
         st.markdown(
-            "Das Ergebnis wird angezeigt. **Patiententext wird serverseitig nicht "
-            "gespeichert.** Der Verlauf bleibt nur in der Sitzung."
+            "Das Ergebnis wird angezeigt. Patiententext wird **nicht dauerhaft "
+            "(auf Datenträger) gespeichert** – nur temporär im Arbeitsspeicher der "
+            "Sitzung gehalten und mit Sitzungsende verworfen."
         )
 
 note(
@@ -50,6 +52,13 @@ note(
     "(z. B. Azure OpenAI in der EU-Region) und ein Endpoint mit "
     "<strong>Zero Data Retention</strong>.",
     kind="amber",
+)
+st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+note(
+    "⬇️ <strong>Export beachten:</strong> Heruntergeladene Dateien (PDF/Text/Markdown) "
+    "enthalten den vollständigen Text und liegen danach <strong>lokal auf deinem "
+    "Gerät</strong> – außerhalb der Kontrolle der App. Bitte sicher ablegen oder löschen.",
+    kind="",
 )
 
 st.divider()
@@ -64,6 +73,15 @@ st.markdown(
     "Fingerprint). **Kein Patiententext, keine Ausgaben** werden gespeichert. "
     "Standardmäßig ist diese Funktion deaktiviert."
 )
+
+note(
+    "ℹ️ Das Protokoll liegt aktuell in einer gemeinsamen Datei und ist "
+    "<strong>nicht für den Mehr-Nutzer-/Mehr-Praxen-Betrieb</strong> ausgelegt "
+    "(echte Mandantentrennung erst mit Anmeldung). Die Vorschau zeigt nur die "
+    "eigene Sitzung.",
+    kind="",
+)
+st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 
 enabled = st.toggle(
     "Audit-Log aktivieren (nur Metadaten)",

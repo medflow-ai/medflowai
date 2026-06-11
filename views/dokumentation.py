@@ -1,6 +1,7 @@
 """Hauptseite: Notizen → strukturierte Dokumentation."""
 from __future__ import annotations
 
+import uuid
 from datetime import datetime
 
 import streamlit as st
@@ -22,7 +23,7 @@ page_header(
     title="Dokumentation erstellen",
     subtitle="Aus knappen Notizen wird strukturierte, prüfbare Dokumentation – in Sekunden.",
     eyebrow="Arbeitsbereich",
-    badges=["🔒 Keine Speicherung von Patiententext", "🩺 Ärztliche Prüfung erforderlich"],
+    badges=["🔒 Keine dauerhafte Speicherung", "🩺 Ärztliche Prüfung erforderlich"],
 )
 
 # Datenschutz-Hinweis ganz oben – bewusst prominent.
@@ -150,8 +151,6 @@ if run:
     if error_msg:
         st.error(error_msg)
     elif result is not None:
-        import uuid
-
         case_label = st.session_state.get("case_label", "").strip()
         st.session_state["last_result"] = {
             "id": uuid.uuid4().hex[:8],

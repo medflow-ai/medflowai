@@ -5,13 +5,23 @@ from __future__ import annotations
 import hashlib
 import html
 import json
+import logging
 import uuid
 from datetime import datetime
 
 import streamlit as st
 
-from lib.config import DOC_TYPES, DocType, EXAMPLES
+from lib.config import (
+    AUDIO_MAX_BYTES,
+    DOC_TYPES,
+    MAX_HISTORY_ITEMS,
+    MAX_PDF_CACHE_ITEMS,
+    DocType,
+    EXAMPLES,
+)
 from lib.export import markdown_to_pdf
+
+logger = logging.getLogger(__name__)
 
 NOTES_KEY = "notes_input"
 HISTORY_KEY = "history"
@@ -38,7 +48,7 @@ def add_to_history(*, doc_type: DocType, text: str, model: str, elapsed_s: float
     }
     hist = st.session_state.setdefault(HISTORY_KEY, [])
     hist.insert(0, item)
-    del hist[50:]  # Verlauf deckeln (Speicher/PDF-Cache klein halten)
+    del hist[MAX_HISTORY_ITEMS:]  # Verlauf deckeln (Speicher/PDF-Cache klein halten)
 
 
 def get_history() -> list[dict]:
@@ -101,7 +111,8 @@ def voice_input() -> None:
         return
     try:
         data = audio.getvalue()
-    except Exception:
+    except Exception as exc:
+        logger.warning("Audioaufnahme konnte nicht gelesen werden: %s", exc)
         return
     if not data:
         return
@@ -109,6 +120,11 @@ def voice_input() -> None:
     audio_id = hashlib.sha256(data).hexdigest()
     if st.session_state.get(_AUDIO_HASH_KEY) == audio_id:
         return  # diese Aufnahme wurde bereits transkribiert
+
+    if len(data) > AUDIO_MAX_BYTES:
+        st.session_state[_AUDIO_HASH_KEY] = audio_id
+        st.warning("Die Aufnahme ist zu groß (max. 25 MB) – bitte kürzer aufnehmen.")
+        return
 
     with st.spinner("Transkribiere Aufnahme …"):
         try:
@@ -124,6 +140,8 @@ def voice_input() -> None:
         st.session_state[NOTES_KEY] = (current + ("\n" if current else "") + text).strip()
         st.session_state["_voice_done"] = True
         st.rerun()
+    else:
+        st.toast("Keine Sprache erkannt – bitte erneut versuchen.", icon="⚠️")
 
 
 # --------------------------------------------------------------------------- #
@@ -185,9 +203,14 @@ def copy_button(text: str, key: str = "cpy") -> None:
     """Echter Kopier-Button mit sichtbarem Erfolgs-Feedback (✓ Kopiert!)."""
     import streamlit.components.v1 as components
 
-    # json.dumps escaped "</script>" NICHT -> "<" zusätzlich neutralisieren,
+    # json.dumps escaped "</script>" NICHT -> <, >, & zusätzlich neutralisieren,
     # sonst kann LLM-Text aus dem Script-Block ausbrechen.
-    safe = json.dumps(text).replace("<", "\\u003c")
+    safe = (
+        json.dumps(text)
+        .replace("<", "\\u003c")
+        .replace(">", "\\u003e")
+        .replace("&", "\\u0026")
+    )
     bid = f"cpy_{key}"
     html = f"""
     <button id="{bid}" style="width:100%;padding:11px 14px;border:none;
@@ -224,7 +247,7 @@ def get_pdf(text: str, title: str) -> bytes | None:
     cache = st.session_state.setdefault("_pdf_cache", {})
     key = hashlib.sha256((title + "\x00" + text).encode("utf-8")).hexdigest()
     if key not in cache:
-        if len(cache) > 60:
+        if len(cache) > MAX_PDF_CACHE_ITEMS:
             cache.clear()
         cache[key] = markdown_to_pdf(text, title)
     return cache[key]

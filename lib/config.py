@@ -179,3 +179,13 @@ EXAMPLES: list[Example] = [
 
 # Standardmodell (zentral, damit leicht austauschbar)
 DEFAULT_MODEL = "gpt-4o-mini"
+
+# Grenzen / Limits
+MAX_HISTORY_ITEMS = 50           # Session-Verlauf deckeln
+MAX_PDF_CACHE_ITEMS = 60         # PDF-Cache pro Sitzung deckeln
+AUDIO_MAX_BYTES = 25 * 1024 * 1024  # Whisper-Hardlimit (25 MB)
+
+# Session-State-Schlüssel für Darstellungseinstellungen (zentral, gegen Tippfehler)
+PREF_DARK = "pref_dark"
+PREF_COMPACT = "pref_compact"
+PREF_LARGE = "pref_large"
