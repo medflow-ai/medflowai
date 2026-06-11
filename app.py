@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from lib import config as C
+from lib import auth, config as C
 from lib.branding import apply_branding, render_logo, render_sidebar_extras
 
 st.set_page_config(
@@ -19,8 +19,12 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Globales Theme + Logo (über der Navigation).
+# Globales Theme zuerst, damit auch der Login-Screen gebrandet ist.
 apply_branding()
+
+# Passwortschutz: blockiert alles Weitere, bis korrekt angemeldet.
+auth.require_password()
+
 render_logo()
 
 # Gruppierte Navigation.
@@ -43,5 +47,6 @@ nav = st.navigation(
 
 # Vertrauens-Badges + Version unterhalb der Navigation.
 render_sidebar_extras()
+auth.render_logout()
 
 nav.run()
