@@ -111,11 +111,17 @@ _TEMPLATES: dict[str, str] = {
 }
 
 
-def build_messages(doc_type: DocType, notes: str, custom_instruction: str | None = None) -> list[dict]:
+def build_messages(
+    doc_type: DocType,
+    notes: str,
+    custom_instruction: str | None = None,
+    language: str = "Deutsch",
+) -> list[dict]:
     """Baut die Chat-Messages für die OpenAI-API.
 
     Bei doc_type 'custom' wird die freie Vorgabe der Ärztin/des Arztes als Aufgabe
-    verwendet (die Leitplanken im System-Prompt gelten weiterhin).
+    verwendet (die Leitplanken im System-Prompt gelten weiterhin). Mit language
+    lässt sich die Ausgabesprache steuern.
     """
     if doc_type.key == "custom" and custom_instruction and custom_instruction.strip():
         task = (
@@ -132,6 +138,11 @@ def build_messages(doc_type: DocType, notes: str, custom_instruction: str | None
         f"ARZT-NOTIZEN (einzige Informationsquelle):\n\"\"\"\n{notes.strip()}\n\"\"\"\n\n"
         "Halte dich exakt an die Struktur. Antworte direkt mit der Dokumentation."
     )
+    if language and language.strip().lower() not in ("deutsch", "de"):
+        user_prompt += (
+            f"\n\nWICHTIG: Verfasse die gesamte Dokumentation inklusive aller "
+            f"Überschriften auf {language}."
+        )
     return [
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": user_prompt},

@@ -3,6 +3,7 @@ Beispiel-Buttons und der (session-basierte) Verlauf."""
 from __future__ import annotations
 
 import hashlib
+import html
 import json
 import uuid
 from datetime import datetime
@@ -20,7 +21,8 @@ HISTORY_KEY = "history"
 # Verlauf (nur in der Session – wird beim Neuladen gelöscht)
 # --------------------------------------------------------------------------- #
 def add_to_history(*, doc_type: DocType, text: str, model: str, elapsed_s: float,
-                   input_preview: str, input_words: int, output_words: int) -> None:
+                   input_preview: str, input_words: int, output_words: int,
+                   case_label: str = "") -> None:
     item = {
         "id": uuid.uuid4().hex,
         "ts": datetime.now().strftime("%d.%m.%Y %H:%M"),
@@ -32,6 +34,7 @@ def add_to_history(*, doc_type: DocType, text: str, model: str, elapsed_s: float
         "input_preview": input_preview,
         "input_words": input_words,
         "output_words": output_words,
+        "case_label": case_label,
     }
     hist = st.session_state.setdefault(HISTORY_KEY, [])
     hist.insert(0, item)
@@ -234,19 +237,25 @@ def render_result_card(
     model: str,
     elapsed_s: float,
     created_ts: str | None = None,
+    case_label: str = "",
     key_prefix: str = "res",
     show_feedback: bool = True,
 ) -> None:
     """Rendert die Dokumentation als Karte mit Kopier-/Download-Aktionen."""
     words = len(text.split())
     ts = created_ts or datetime.now().strftime("%d.%m.%Y %H:%M")
+    case_chip = (
+        f"<span class='mf-tag gray'>🏷️ {html.escape(case_label)}</span>" if case_label else ""
+    )
 
     with st.container(border=True):
         # Kopfzeile
         st.markdown(
             f"""
             <div class="mf-result-head">
-              <span class="mf-tag">{doc_type.icon} {doc_type.label}</span>
+              <span style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+                {case_chip}<span class="mf-tag">{doc_type.icon} {doc_type.label}</span>
+              </span>
               <span class="mf-meta">{ts} · {words} Wörter · {model} · {elapsed_s:.1f}s</span>
             </div>
             """,

@@ -66,7 +66,10 @@ q = (query or "").strip().lower()
 def _matches(item: dict) -> bool:
     if not q:
         return True
-    haystack = f"{item['doc_label']} {item.get('input_preview', '')} {item['text']}".lower()
+    haystack = (
+        f"{item.get('case_label', '')} {item['doc_label']} "
+        f"{item.get('input_preview', '')} {item['text']}"
+    ).lower()
     return q in haystack
 
 
@@ -82,12 +85,17 @@ if not filtered:
 # Timeline
 # --------------------------------------------------------------------------- #
 for item in filtered:
+    case_chip = (
+        f"<span class='mf-tag gray'>🏷️ {html.escape(item['case_label'])}</span>"
+        if item.get("case_label") else ""
+    )
     with st.container(border=True):
         st.markdown(
             f"""
             <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
               <span style="width:10px; height:10px; border-radius:50%; background:#14B8A6;
                 box-shadow:0 0 0 4px rgba(20,184,166,.15); display:inline-block;"></span>
+              {case_chip}
               <span class="mf-tag">{item['doc_icon']} {item['doc_label']}</span>
               <span class="mf-meta">{item['ts']} · {item['output_words']} Wörter · {item['model']}</span>
             </div>

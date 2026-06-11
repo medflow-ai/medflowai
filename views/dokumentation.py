@@ -34,6 +34,16 @@ note(
 )
 st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
 
+# Optionales, pseudonymes Fall-Label (hilft beim Wiederfinden im Verlauf).
+st.text_input(
+    "Fall-Label",
+    key="case_label",
+    max_chars=60,
+    placeholder='🏷️ Fall-Label (optional, pseudonym) – z. B. "Fall A", kein Klarname',
+    label_visibility="collapsed",
+)
+st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
+
 # Key-Verfügbarkeit prüfen (kein Crash, klare Anleitung).
 key_ok = api_key_available()
 if not key_ok:
@@ -95,6 +105,14 @@ def _clear_notes() -> None:
     st.session_state.pop("last_result", None)
 
 
+out_lang = st.selectbox(
+    "Ausgabesprache",
+    ["Deutsch", "English", "Français", "Español", "Italiano", "Türkçe"],
+    index=0,
+    key="out_lang",
+    help="Sprache der erzeugten Dokumentation.",
+)
+
 step(3, "Erstellen & prüfen")
 b1, b2 = st.columns([3, 1])
 with b1:
@@ -116,7 +134,9 @@ if run:
     with st.status("KI verarbeitet die Notizen …", expanded=True) as status:
         st.write("Eingaben werden geprüft …")
         try:
-            result = generate_documentation(notes, doc_type, custom_instruction=custom_instruction)
+            result = generate_documentation(
+                notes, doc_type, custom_instruction=custom_instruction, language=out_lang
+            )
         except (ConfigError, LLMError) as exc:
             error_msg = str(exc)
             status.update(label="Erstellung fehlgeschlagen", state="error")
@@ -132,6 +152,7 @@ if run:
     elif result is not None:
         import uuid
 
+        case_label = st.session_state.get("case_label", "").strip()
         st.session_state["last_result"] = {
             "id": uuid.uuid4().hex[:8],
             "text": result.text,
@@ -140,6 +161,7 @@ if run:
             "elapsed": result.elapsed_s,
             "ts": datetime.now().strftime("%d.%m.%Y %H:%M"),
             "truncated": result.truncated,
+            "case_label": case_label,
         }
         # Pseudonymisiertes Audit (nur wenn Opt-in aktiv) – kein Patiententext.
         audit.record_event(
@@ -158,6 +180,7 @@ if run:
             input_preview=(notes[:90] + "…") if len(notes) > 90 else notes,
             input_words=len(notes.split()),
             output_words=len(result.text.split()),
+            case_label=case_label,
         )
         st.toast("Dokumentation erstellt", icon="✅")
 
@@ -180,5 +203,6 @@ if lr:
         model=lr["model"],
         elapsed_s=lr["elapsed"],
         created_ts=lr.get("ts"),
+        case_label=lr.get("case_label", ""),
         key_prefix=lr["id"],
     )
